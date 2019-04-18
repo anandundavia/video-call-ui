@@ -10,9 +10,13 @@ import InputLabel from "@material-ui/core/InputLabel";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Fade from "@material-ui/core/Fade";
+import FormHelperText from "@material-ui/core/FormHelperText";
 
 import { updateMobileNumberInput } from "../../reducers/input/input.reducer";
-import { findUserByMobileNumber } from "../../reducers/user/user.reducer";
+import { peerMobileNumberSubmitted } from "../../reducers/user/user.reducer";
+
+import logger from "../../utils/logger";
+const log = logger(__filename);
 
 const styles = theme => ({
     main: {
@@ -52,75 +56,91 @@ const styles = theme => ({
     }
 });
 
-const Registration = ({
-    classes,
-    updateMobileNumberInput,
-    findUserByMobileNumber,
-    input,
-    user
-}) => {
-    const submitMobileNumber = _ => {
-        findUserByMobileNumber(input.mobileNumber.sanitizedValue);
+class InitiateCall extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            error: false
+        };
+    }
+
+    submitMobileNumber = _ => {
+        const { input, user, peerMobileNumberSubmitted } = this.props;
+        if (input.mobileNumber.sanitizedValue === user.mobileNumber) {
+            this.setState({ error: true, labelText: "Can not call self" });
+        } else {
+            peerMobileNumberSubmitted(input.mobileNumber.sanitizedValue);
+        }
     };
 
-    const onMobileNumberChanged = e => {
+    onMobileNumberChanged = e => {
+        const { updateMobileNumberInput } = this.props;
         updateMobileNumberInput(e.target.value);
     };
-    return (
-        <div className={classes.main}>
-            <Fade in>
-                <Paper className={classes.paper}>
-                    <Typography component="h1" variant="h5">
-                        Hi There!
-                    </Typography>
-                    <div className={classes.info}>
-                        <Typography component="h1" variant="subheading">
-                            Mobile Number: {user.mobileNumber}
-                        </Typography>
-                        <Typography component="h1" variant="caption">
-                            PeerID: {user.peerID}
-                        </Typography>
-                    </div>
-                </Paper>
-            </Fade>
-            <Fade in>
-                <Paper className={classes.paper}>
-                    <Typography component="h1" variant="h5">
-                        Whom Do You Want To Call?
-                    </Typography>
-                    <form className={classes.form}>
-                        <FormControl margin="normal" required fullWidth>
-                            <InputLabel htmlFor="phoneNumber">Phone Number</InputLabel>
-                            <Input
-                                name="phoneNumber"
-                                autoComplete="tel"
-                                placeholder="+91 1122 333 444"
-                                autoFocus
-                                required
-                                value={input.mobileNumber.value}
-                                error={input.mobileNumber.error}
-                                onChange={onMobileNumberChanged}
-                                type="tel"
-                            />
-                        </FormControl>
 
-                        <Button
-                            type="button"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            className={classes.submit}
-                            disabled={input.submit.disabled}
-                            onClick={submitMobileNumber}
-                        >
-                            {input.submit.text}
-                        </Button>
-                    </form>
-                </Paper>
-            </Fade>
-        </div>
-    );
-};
+    render() {
+        const { classes, user, input } = this.props;
+        const labelText = this.state.labelText || "";
+        return (
+            <div className={classes.main}>
+                <Fade in>
+                    <Paper className={classes.paper}>
+                        <Typography component="h1" variant="h5">
+                            Hi There!
+                        </Typography>
+                        <div className={classes.info}>
+                            <Typography component="h1" variant="subheading">
+                                Mobile Number: {user.mobileNumber}
+                            </Typography>
+                            <Typography component="h1" variant="caption">
+                                PeerID: {user.peerID}
+                            </Typography>
+                        </div>
+                    </Paper>
+                </Fade>
+                <Fade in>
+                    <Paper className={classes.paper}>
+                        <Typography component="h1" variant="h5">
+                            Whom Do You Want To Call?
+                        </Typography>
+                        <form className={classes.form}>
+                            <FormControl margin="normal" required fullWidth>
+                                <InputLabel htmlFor="phoneNumber">Phone Number of peer</InputLabel>
+                                <Input
+                                    name="phoneNumber"
+                                    autoComplete="tel"
+                                    placeholder="+91 1122 333 444"
+                                    autoFocus
+                                    required
+                                    disabled={input.mobileNumber.disabled}
+                                    value={input.mobileNumber.value}
+                                    error={this.state.error || input.mobileNumber.error}
+                                    onChange={this.onMobileNumberChanged}
+                                    type="tel"
+                                />
+                                <FormHelperText error={this.state.error}>
+                                    {labelText}
+                                </FormHelperText>
+                            </FormControl>
+
+                            <Button
+                                type="button"
+                                fullWidth
+                                variant="contained"
+                                color="primary"
+                                className={classes.submit}
+                                disabled={input.submit.disabled}
+                                onClick={this.submitMobileNumber}
+                            >
+                                {input.submit.text}
+                            </Button>
+                        </form>
+                    </Paper>
+                </Fade>
+            </div>
+        );
+    }
+}
 
 const mapStateToProps = state => {
     return {
@@ -128,23 +148,25 @@ const mapStateToProps = state => {
             mobileNumber: {
                 value: state.input.mobileNumber,
                 sanitizedValue: state.input.sanitizedMobileNumber,
-                error: state.input.touched && !state.input.isMobileNumberValid
+                error: state.input.touched && !state.input.isMobileNumberValid,
+                disabled: state.input.disableMobileNumberInput
             },
             submit: {
                 disabled: state.input.submitButtonDisabled,
                 text: state.input.submitButtonText
             }
         },
-        user: state.user
+        user: state.user,
+        peer: state.peer
     };
 };
 
 const mapDispatchToProps = {
     updateMobileNumberInput,
-    findUserByMobileNumber
+    peerMobileNumberSubmitted
 };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(withStyles(styles)(Registration));
+)(withStyles(styles)(InitiateCall));

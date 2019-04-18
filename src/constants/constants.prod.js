@@ -5,5 +5,10 @@ export default {
             register: "/user/register",
             get: "/user/get"
         }
+    },
+    peer: {
+        host: "localhost",
+        port: 8000,
+        path: "/peer"
     }
 };

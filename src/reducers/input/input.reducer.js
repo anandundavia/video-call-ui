@@ -3,6 +3,7 @@ import { sanitizeMobileNumber, isMobileNumberValid } from "./input.model";
 const MOBILE_NUMBER_INPUT_UPDATED = "[USER_INPUT]MOBILE_NUMBER_UPDATED";
 const SUBMIT_BUTTON_INPUT_UPDATED = "[USER_INPUT]SUBMIT_BUTTON_INPUT_UPDATED";
 const MOBILE_NUMBER_INPUT_RESET_TOUCHED = "[USER_INPUT]MOBILE_NUMBER_RESET_TOUCHED";
+const MOBILE_NUMBER_INPUT_STATUS_UPDATE = "[USER_INPUT]MOBILE_NUMBER_INPUT_STATUS_UPDATE";
 
 export const resetMobileNumberTouched = () => ({
     type: MOBILE_NUMBER_INPUT_RESET_TOUCHED
@@ -16,6 +17,16 @@ export const updateMobileNumberInput = number => ({
 export const updateSubmitButton = ({ text, disabled }) => ({
     type: SUBMIT_BUTTON_INPUT_UPDATED,
     payload: { text, disabled }
+});
+
+export const disableMobileNumberInput = () => ({
+    type: MOBILE_NUMBER_INPUT_STATUS_UPDATE,
+    payload: { disabled: true }
+});
+
+export const enableMobileNumberInput = () => ({
+    type: MOBILE_NUMBER_INPUT_STATUS_UPDATE,
+    payload: { disabled: false }
 });
 
 export const resetSubmitButton = () => dispatch => {
@@ -66,7 +77,14 @@ export default function userInputReducer(state = initialInputState, action) {
         case MOBILE_NUMBER_INPUT_RESET_TOUCHED: {
             return {
                 ...state,
-                touched: false
+                touched: false,
+                disableMobileNumberInput: false
+            };
+        }
+        case MOBILE_NUMBER_INPUT_STATUS_UPDATE: {
+            return {
+                ...state,
+                disableMobileNumberInput: action.payload.disabled
             };
         }
         default:

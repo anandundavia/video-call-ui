@@ -2,7 +2,7 @@ import axios from "axios";
 import { push } from "connected-react-router";
 
 import constants from "../../constants";
-// import { isResponseGood } from "../../utils";
+import peerService from "../../services/peer.service";
 
 import {
     updateSubmitButton,
@@ -10,8 +10,13 @@ import {
     resetMobileNumberInput
 } from "../input/input.reducer";
 import { showSnackBar } from "../snackbar/snackbar.reducer";
+import { setPeer } from "../peer/peer.reducer";
 
-const UPDATE_USER = "[USER]UPDATE_USER";
+export const UPDATE_USER = "[USER]UPDATE_USER";
+
+export const peerMobileNumberSubmitted = number => dispatch => {
+    dispatch(findUserByMobileNumber(number));
+};
 
 export const findUserByMobileNumber = number => dispatch => {
     dispatch(updateSubmitButton({ text: "finding...", disabled: true }));
@@ -22,10 +27,8 @@ export const findUserByMobileNumber = number => dispatch => {
         .then(response => {
             dispatch(resetSubmitButton());
             dispatch(resetMobileNumberInput());
-            // dispatch(showSnackBar(__filename, "Welcome Back!", "info"));
-            console.log(response.data);
-            // dispatch({ type: UPDATE_USER, payload: response.data });
-            // dispatch(push("/initiate-call"));
+            dispatch(setPeer(response.data));
+            dispatch(push("/live-call"));
         })
         .catch(error => {
             dispatch(resetSubmitButton());
@@ -57,7 +60,7 @@ export const saveMobileNumber = number => dispatch => {
                     showSnackBar(__filename, `Welcome back ${response.data.mobileNumber} !`, "info")
                 );
             }
-
+            peerService.init(response.data);
             dispatch(push("/initiate-call"));
         })
         .catch(error => {
