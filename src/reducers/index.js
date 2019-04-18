@@ -4,12 +4,14 @@ import { connectRouter, routerMiddleware } from "connected-react-router";
 import { createBrowserHistory } from "history";
 import userReducer from "./user/user.reducer";
 import inputReducer from "./input/input.reducer";
+import snackbarReducer from "./snackbar/snackbar.reducer";
 
 export const history = createBrowserHistory();
 
 const allReducers = combineReducers({
     user: userReducer,
     input: inputReducer,
+    snackbar: snackbarReducer,
     router: connectRouter(history)
 });
 
