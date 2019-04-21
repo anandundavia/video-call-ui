@@ -1,13 +1,6 @@
 import Peer from "simple-peer";
-import Axios from "axios";
 
 import logger from "../utils/logger";
-import constants from "../constants";
-
-import { store } from "../reducers";
-
-import socketService from "../services/socket.service";
-
 const log = logger(__filename);
 
 class PeerService {

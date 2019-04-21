@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import Axios from "axios";
 
 import withStyles from "@material-ui/core/styles/withStyles";
 import Paper from "@material-ui/core/Paper";
@@ -8,20 +7,13 @@ import Typography from "@material-ui/core/Typography";
 import Fade from "@material-ui/core/Fade";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-import { updateMobileNumberInput } from "../../reducers/input/input.reducer";
-import { updateUserPreferences } from "../../reducers/user/user.reducer";
-import { setPeer } from "../../reducers/peer/peer.reducer";
+import { updatePeerInformation } from "../../reducers/peer/peer.reducer";
 
-import { withSnackbar } from "notistack";
-
-import { hasOnlyNumbers, sanitizeMobileNumber } from "../../utils";
-import constants from "../../constants";
-
-import logger from "../../utils/logger";
 import peerService from "../../services/peer.service";
 import streamService from "../../services/stream.service";
 import socketService from "../../services/socket.service";
 
+import logger from "../../utils/logger";
 const log = logger(__filename);
 
 const styles = theme => ({
@@ -118,7 +110,11 @@ class MakeCall extends React.Component {
                 console.log("user", user);
                 console.log("peer", peer);
 
-                socketService.emitNonInitiatorSignal({ user, signal: peerService.selfSignal, peer });
+                socketService.emitNonInitiatorSignal({
+                    user,
+                    signal: peerService.selfSignal,
+                    peer
+                });
                 this.setState(state => ({
                     status: {
                         progress: state.status.progress + 1,
@@ -152,19 +148,16 @@ class MakeCall extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        snackbar: state.snackbar,
         user: state.user,
         peer: state.peer
     };
 };
 
 const mapDispatchToProps = {
-    updateMobileNumberInput,
-    saveMobileNumber: updateUserPreferences,
-    setPeer
+    setPeer: updatePeerInformation
 };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(withSnackbar(withStyles(styles)(MakeCall)));
+)(withStyles(styles)(MakeCall));

@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+
 import Axios from "axios";
 
 import withStyles from "@material-ui/core/styles/withStyles";
@@ -8,19 +9,13 @@ import Typography from "@material-ui/core/Typography";
 import Fade from "@material-ui/core/Fade";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-import { updateMobileNumberInput } from "../../reducers/input/input.reducer";
-import { updateUserPreferences } from "../../reducers/user/user.reducer";
-import { setPeer } from "../../reducers/peer/peer.reducer";
-
-import { withSnackbar } from "notistack";
-
-import { hasOnlyNumbers, sanitizeMobileNumber } from "../../utils";
-import constants from "../../constants";
-
-import logger from "../../utils/logger";
 import peerService from "../../services/peer.service";
 import streamService from "../../services/stream.service";
 import socketService from "../../services/socket.service";
+
+import constants from "../../constants";
+
+import logger from "../../utils/logger";
 const log = logger(__filename);
 
 const styles = theme => ({
@@ -135,10 +130,8 @@ class MakeCall extends React.Component {
                         message: `Making sure "${peer.mobileNumber}" available...`
                     }
                 }));
-                // return this.getSignalForUser({ userID: user._id });
             })
-            .then(peerResponse => {
-                // peerService.setPeerUserAndSignal({ user: peer, signal: peerResponse.data });
+            .then(() => {
                 this.setState(state => ({
                     status: {
                         progress: state.status.progress + 1,
@@ -177,21 +170,14 @@ class MakeCall extends React.Component {
     }
 }
 
-const mapStateToProps = state => {
-    return {
-        snackbar: state.snackbar,
-        user: state.user,
-        peer: state.peer
-    };
-};
+const mapStateToProps = state => ({
+    user: state.user,
+    peer: state.peer
+});
 
-const mapDispatchToProps = {
-    updateMobileNumberInput,
-    saveMobileNumber: updateUserPreferences,
-    setPeer
-};
+const mapDispatchToProps = {};
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(withSnackbar(withStyles(styles)(MakeCall)));
+)(withStyles(styles)(MakeCall));

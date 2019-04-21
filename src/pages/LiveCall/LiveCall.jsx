@@ -42,32 +42,7 @@ class LiveCall extends React.Component {
     render() {
         return <div className={this.props.classes.main}>{this.getVideo()}</div>;
     }
-    componentDidMount() {
-        const peer = peerService.get();
-        if (peer) {
-            log.debug("requesting steam");
-            steamService
-                .requestStream()
-                .then(stream => {
-                    log.debug("steam received");
-                    const callee = peerService.getCallee();
-                    const call = peer.call(callee.peerID, stream);
-                    call.on("stream", remoteStream => {
-                        peerService.remoteStream = remoteStream;
-                        const elem = document.getElementById("video-source");
-                        elem.setAttribute("src", URL.createObjectURL(remoteStream));
-                        this.setState({ shouldStream: true });
-                        log.info("call connected!");
-                    });
-                })
-                .catch(error => {
-                    log.error(error);
-                });
-        } else {
-            log.error(`peer is falsy`);
-            log.error(peer);
-        }
-    }
+    componentDidMount() {}
 }
 
 export default withStyles(styles)(LiveCall);

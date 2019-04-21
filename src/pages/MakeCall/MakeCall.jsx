@@ -12,11 +12,7 @@ import Typography from "@material-ui/core/Typography";
 import Fade from "@material-ui/core/Fade";
 import FormHelperText from "@material-ui/core/FormHelperText";
 
-import { updateMobileNumberInput } from "../../reducers/input/input.reducer";
-import { updateUserPreferences } from "../../reducers/user/user.reducer";
-import { setPeer } from "../../reducers/peer/peer.reducer";
-
-import { withSnackbar } from "notistack";
+import { updatePeerInformation } from "../../reducers/peer/peer.reducer";
 
 import { hasOnlyNumbers, sanitizeMobileNumber } from "../../utils";
 import constants from "../../constants";
@@ -200,18 +196,15 @@ class MakeCall extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        snackbar: state.snackbar,
         user: state.user
     };
 };
 
 const mapDispatchToProps = {
-    updateMobileNumberInput,
-    saveMobileNumber: updateUserPreferences,
-    setPeer
+    setPeer: updatePeerInformation
 };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(withSnackbar(withStyles(styles)(MakeCall)));
+)(withStyles(styles)(MakeCall));

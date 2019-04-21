@@ -126,7 +126,6 @@ class Registration extends React.Component {
                     preventDuplicate: true
                 });
                 log.debug(`updating user preference to "${isCaller ? "caller" : "callee"}"`);
-                return this.setUserCallPreference({ user: response.data, isCaller });
             })
             .then(() => {
                 log.debug("updating user preference successfully updated");
@@ -151,13 +150,6 @@ class Registration extends React.Component {
                 log.error(e);
             });
     };
-
-    setUserCallPreference = ({ user, isCaller }) =>
-        new Promise((resolve, reject) => {
-            const path = `${constants.api.base}${constants.api.user.preference}`;
-            const body = { ID: user._id, isCaller };
-            return Axios.patch(path, body).then(resolve, reject);
-        });
 
     registerUser = ({ mobileNumber }) =>
         new Promise((resolve, reject) => {
@@ -236,12 +228,10 @@ class Registration extends React.Component {
     }
 }
 
-const mapStateToProps = state => {
-    return {
-        snackbar: state.snackbar,
-        user: state.user
-    };
-};
+const mapStateToProps = state => ({
+    snackbar: state.snackbar,
+    user: state.user
+});
 
 const mapDispatchToProps = {
     updateUserInformation,

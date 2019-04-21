@@ -1,24 +1,15 @@
-export const SET_PEER = "[PEER]SET";
-export const CALL_PEER = "[PEER]CALL";
+export const UPDATE_PEER = "[PEER]UPDATE_PEER";
 
-export const setPeer = peer => ({ type: SET_PEER, payload: peer });
-
-export const callPeer = () => ({ type: CALL_PEER });
+export const updatePeerInformation = peer => ({ type: UPDATE_PEER, payload: peer });
 
 const initialState = {};
 
 export default function(state = initialState, action) {
     switch (action.type) {
-        case SET_PEER: {
+        case UPDATE_PEER: {
             return {
                 ...state,
-                ...action.payload   
-            };
-        }
-        case CALL_PEER: {
-            return {
-                ...state,
-                isCalling: true
+                ...action.payload
             };
         }
         default: {
