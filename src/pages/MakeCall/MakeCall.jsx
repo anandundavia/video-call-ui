@@ -1,7 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
 import Axios from "axios";
-import { withSnackbar } from "notistack";
 
 import withStyles from "@material-ui/core/styles/withStyles";
 import Button from "@material-ui/core/Button";
@@ -11,18 +10,17 @@ import InputLabel from "@material-ui/core/InputLabel";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Fade from "@material-ui/core/Fade";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import FormLabel from "@material-ui/core/FormLabel";
-import Radio from "@material-ui/core/Radio";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 
-import { updateUserCallPreference, updateUserInformation } from "../../reducers/user/user.reducer";
+import { updateMobileNumberInput } from "../../reducers/input/input.reducer";
+import { updateUserPreferences } from "../../reducers/user/user.reducer";
+import { setPeer } from "../../reducers/peer/peer.reducer";
 
-import socketService from "../../services/socket.service";
+import { withSnackbar } from "notistack";
 
-import constants from "../../constants";
 import { hasOnlyNumbers, sanitizeMobileNumber } from "../../utils";
+import constants from "../../constants";
+
 import logger from "../../utils/logger";
 const log = logger(__filename);
 
@@ -56,7 +54,7 @@ const styles = theme => ({
     }
 });
 
-class Registration extends React.Component {
+class MakeCall extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -64,9 +62,6 @@ class Registration extends React.Component {
                 value: "",
                 error: null,
                 errorMessage: null
-            },
-            callPreference: {
-                preference: constants.preferences.caller
             },
             submit: {
                 disabled: true,
@@ -77,13 +72,19 @@ class Registration extends React.Component {
 
     onMobileNumberChanged = e => {
         const { value } = e.target;
-        const error = !hasOnlyNumbers(value, { allowSpaces: true });
-        const errorMessage = error ? "Only numbers, spaces and '+' are allowed" : null;
+        let error = !hasOnlyNumbers(value, { allowSpaces: true });
+        let errorMessage = error ? "Only numbers, spaces and '+' are allowed" : null;
+
+        const { user } = this.props;
+        if (sanitizeMobileNumber(value) === user.mobileNumber) {
+            error = true;
+            errorMessage = "Can not call self";
+        }
 
         const submitButtonError = error || value.length < constants.minimumMobileNumberLength;
         const submit = {
             disabled: submitButtonError,
-            text: submitButtonError ? "fill in mobile number" : "continue"
+            text: submitButtonError ? "fill in mobile number" : "call"
         };
 
         const mobileNumber = {
@@ -95,86 +96,67 @@ class Registration extends React.Component {
         this.setState({ mobileNumber, submit });
     };
 
-    onCallPreferenceChanged = e => {
-        const preference = e.target.value;
-        this.setState({ callPreference: { preference } });
-    };
-
     onMobileNumberSubmitted = e => {
         e.preventDefault();
-
         const submit = {
             disabled: true,
-            text: "please wait..."
+            text: "finding..."
         };
         this.setState({ submit });
 
         const mobileNumber = sanitizeMobileNumber(this.state.mobileNumber.value);
-        const isCaller = this.state.callPreference.preference === constants.preferences.caller;
 
-        log.debug(`registering user with mobile number "${mobileNumber}"`);
-        this.registerUser({ mobileNumber })
+        log.debug(`finding user with mobile number "${mobileNumber}"`);
+        this.findUserWithMobileNumber({ mobileNumber })
             .then(response => {
-                log.debug(`user with mobile number "${mobileNumber}" successfully registered`);
-                const { updateUserInformation, enqueueSnackbar } = this.props;
-                updateUserInformation(response.data);
-                const message = response.data.new
-                    ? `Successfully Registered ${response.data.mobileNumber}!`
-                    : `Welcome Back ${response.data.mobileNumber}!`;
-                enqueueSnackbar(message, {
-                    variant: response.data.new ? "success" : "info",
-                    preventDuplicate: true
-                });
-                log.debug(`updating user preference to "${isCaller ? "caller" : "callee"}"`);
-                return this.setUserCallPreference({ user: response.data, isCaller });
+                log.debug(`user with mobile number "${mobileNumber}" successfully found`);
+                const { setPeer, history } = this.props;
+                setPeer(response.data);
+                history.push("/initialize-call");
             })
-            .then(() => {
-                log.debug("updating user preference successfully updated");
-                const submit = {
-                    disabled: false,
-                    text: "All Done"
-                };
-                this.setState({ submit });
-                const { updateUserCallPreference } = this.props;
-                updateUserCallPreference({ isCaller });
-                socketService.init();
-            })
-            .then(() => {
-                if (isCaller) {
-                    this.props.history.push("/make-call");
-                } else {
-                    this.props.history.push("/wait-for-call");
+            .catch(error => {
+                if (error.response && error.response.status === 404) {
+                    const submit = {
+                        disabled: false,
+                        text: "fill in mobile number..."
+                    };
+                    const mobileNumberState = {
+                        value: "",
+                        error: true,
+                        errorMessage: `No user with mobile number "${mobileNumber}" exists.`
+                    };
+                    log.debug(`user with mobile number "${mobileNumber}" not found`);
+                    return this.setState({ submit, mobileNumber: mobileNumberState });
                 }
-            })
-            .catch(e => {
-                log.error("something went wrong while registering the user");
-                log.error(e);
+                log.error(`error while finding user with mobile number "${mobileNumber}"`);
+                log.error(error);
             });
     };
 
-    setUserCallPreference = ({ user, isCaller }) =>
+    findUserWithMobileNumber = ({ mobileNumber }) =>
         new Promise((resolve, reject) => {
-            const path = `${constants.api.base}${constants.api.user.preference}`;
-            const body = { ID: user._id, isCaller };
-            return Axios.patch(path, body).then(resolve, reject);
-        });
-
-    registerUser = ({ mobileNumber }) =>
-        new Promise((resolve, reject) => {
-            const path = `${constants.api.base}${constants.api.user.register}`;
+            const path = `${constants.api.base}${constants.api.user.get}`;
             const body = { mobileNumber };
             return Axios.post(path, body).then(resolve, reject);
         });
 
     render() {
-        const { classes } = this.props;
-        const { mobileNumber, callPreference, submit } = this.state;
+        const { classes, user } = this.props;
+        const { mobileNumber, submit } = this.state;
         return (
             <div className={classes.main}>
                 <Fade in>
                     <Paper className={classes.paper}>
                         <Typography component="h1" variant="h5">
-                            Register Yourself
+                            Hi {user.mobileNumber}!
+                        </Typography>
+                        <Typography variant="caption">ID: {user._id}</Typography>
+                    </Paper>
+                </Fade>
+                <Fade in>
+                    <Paper className={classes.paper}>
+                        <Typography component="h1" variant="h5">
+                            Whom Do You Want To Call?
                         </Typography>
                         <form className={classes.form}>
                             <FormControl margin="normal" required fullWidth>
@@ -195,26 +177,6 @@ class Registration extends React.Component {
                                         {mobileNumber.errorMessage}
                                     </FormHelperText>
                                 )}
-                            </FormControl>
-                            <FormControl margin="normal" fullWidth>
-                                <FormLabel component="legend">I would like to</FormLabel>
-                                <RadioGroup
-                                    row
-                                    name="callPreference"
-                                    value={callPreference.preference}
-                                    onChange={this.onCallPreferenceChanged}
-                                >
-                                    <FormControlLabel
-                                        value={constants.preferences.caller}
-                                        control={<Radio />}
-                                        label="Make a Call"
-                                    />
-                                    <FormControlLabel
-                                        value={constants.preferences.callee}
-                                        control={<Radio />}
-                                        label="Receive a Call"
-                                    />
-                                </RadioGroup>
                             </FormControl>
 
                             <Button
@@ -244,11 +206,12 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-    updateUserInformation,
-    updateUserCallPreference
+    updateMobileNumberInput,
+    saveMobileNumber: updateUserPreferences,
+    setPeer
 };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(withSnackbar(withStyles(styles)(Registration)));
+)(withSnackbar(withStyles(styles)(MakeCall)));

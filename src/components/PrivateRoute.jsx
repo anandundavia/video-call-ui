@@ -9,26 +9,29 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
     const state = store.getState();
     log.debug(`Incoming route: ${rest.path}`);
     switch (rest.path) {
-        case "/initiate-call": {
-            if (state.user && state.user.peerID) {
-                log.debug("user has peerID. allowed access to '/initiate-call'");
+        case "/wait-for-call":
+        case "/make-call": {
+            if (state.user && state.user.mobileNumber) {
+                log.debug("user exists. allowed access to '/initiate-call'");
                 return <Route {...rest} component={Component} />;
             } else {
-                log.warn("did not find required user and user.peerID");
+                log.warn("did not find required user or user.mobileNumber");
             }
             break;
         }
-        case "/live-call": {
-            if (state.user && state.user.peerID && state.peer && state.peer.peerID) {
-                log.debug("user has peerID. peer has peerID. allowed access to '/live-call'");
+        case "/initialize-call": {
+            if (state.user && state.user.mobileNumber && state.peer && state.peer.mobileNumber) {
+                log.debug("user exists. peer exists. allowed access to '/initialize-call'");
                 return <Route {...rest} component={Component} />;
             } else {
-                log.warn("did not find required user and user.peerID and peer and peer.peerID");
+                log.warn(
+                    "did not find required user or user.mobileNumber and peer and peer.mobileNumber"
+                );
             }
             break;
         }
         default: {
-            log.debug("user does not have peerID. redirecting to /registration");
+            log.debug("no rules specified. redirecting to /registration");
         }
     }
     return <Redirect to="/registration" />;

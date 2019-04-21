@@ -15,8 +15,8 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import { updateMobileNumberInput } from "../../reducers/input/input.reducer";
 import { peerMobileNumberSubmitted } from "../../reducers/user/user.reducer";
 
-import logger from "../../utils/logger";
-const log = logger(__filename);
+// import logger from "../../utils/logger";
+// const log = logger(__filename);
 
 const styles = theme => ({
     main: {

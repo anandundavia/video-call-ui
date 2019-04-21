@@ -8,9 +8,10 @@ import "./index.css";
 import { store, history } from "./reducers";
 
 import Registration from "./pages/Registration/Registration";
-import InitiateCall from "./pages/InitiateCall/InitiateCall";
+import MakeCall from "./pages/MakeCall/MakeCall";
 import PrivateRoute from "./components/PrivateRoute";
-import LiveCall from "./pages/LiveCall/LiveCall";
+import InitializeCall from "./pages/InitializeCall/InitializeCall";
+import WaitForCall from "./pages/WaitForCall/WaitForCall";
 
 import { SnackbarProvider } from "notistack";
 
@@ -22,8 +23,9 @@ const App = () => (
                 <ConnectedRouter history={history}>
                     <Switch>
                         <Route exact path="/registration" component={Registration} />
-                        <PrivateRoute exact path="/initiate-call" component={InitiateCall} />
-                        <PrivateRoute exact path="/live-call" component={LiveCall} />
+                        <PrivateRoute exact path="/make-call" component={MakeCall} />
+                        <PrivateRoute exact path="/wait-for-call" component={WaitForCall} />
+                        <PrivateRoute exact path="/initialize-call" component={InitializeCall} />
                         <Redirect from="**" to="/registration" />
                     </Switch>
                 </ConnectedRouter>

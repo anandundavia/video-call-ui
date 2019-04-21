@@ -1,14 +1,13 @@
 export const SHOW_SNACKBAR = "[SNACKBAR]SHOW";
 export const HIDE_SNACKBAR = "[SNACKBAR]HIDE";
 
-export const showSnackBar = (fileName, message, variant) => ({
+export const showSnackBar = (message, variant) => ({
     type: SHOW_SNACKBAR,
-    payload: { fileName, message, variant }
+    payload: { message, variant }
 });
 
 const initialState = {
-    show: false,
-    fileName: null
+    show: false
 };
 
 export default function(state = initialState, action) {

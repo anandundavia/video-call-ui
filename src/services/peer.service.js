@@ -1,13 +1,54 @@
+import Peer from "simple-peer";
+import Axios from "axios";
+
 import logger from "../utils/logger";
 import constants from "../constants";
+
+import { store } from "../reducers";
+
+import socketService from "../services/socket.service";
 
 const log = logger(__filename);
 
 class PeerService {
-    init(user) {
-        log.debug(`initializing peer with ${user.peerID}`);
-        this.peer = new window.Peer(user.peerID, constants.peer);
-        this.peer.on("error", err => log.error(err));
+    initializeForUser({ user, stream }) {
+        return new Promise(resolve => {
+            const options = {
+                initiator: user.isCaller,
+                trickle: false
+            };
+            if (user.isCaller) {
+                options.stream = stream;
+            }
+            this.peer = new Peer(options);
+            this.peer.on("signal", data => {
+                this.selfSignal = data;
+                log.debug("signal from webRTC received");
+                resolve();
+            });
+            this.peer.on("connect", () => {
+                console.log("connect");
+            });
+            this.peer.on("stream", videoStream => {
+                log.debug("received video steam!");
+            });
+            this.peer.on("error", function(err) {
+                console.log("error", err);
+            });
+        });
+    }
+
+    setPeerSignal(signal) {
+        log.debug("setting peer signal");
+        this.peerSignal = signal;
+        this.peer.signal(signal);
+    }
+
+    setPeerUserAndSignal({ user, signal }) {
+        this.peerUser = {
+            user,
+            signal
+        };
     }
 }
 

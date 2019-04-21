@@ -11,8 +11,15 @@ import {
 } from "../input/input.reducer";
 import { showSnackBar } from "../snackbar/snackbar.reducer";
 import { setPeer } from "../peer/peer.reducer";
+import { sanitizeMobileNumber } from "../input/input.model";
 
 export const UPDATE_USER = "[USER]UPDATE_USER";
+
+export const updateUserInformation = user => ({ type: UPDATE_USER, payload: user });
+export const updateUserCallPreference = ({ isCaller }) => ({
+    type: UPDATE_USER,
+    payload: { isCaller }
+});
 
 export const peerMobileNumberSubmitted = number => dispatch => {
     dispatch(findUserByMobileNumber(number));
@@ -28,6 +35,7 @@ export const findUserByMobileNumber = number => dispatch => {
             dispatch(resetSubmitButton());
             dispatch(resetMobileNumberInput());
             dispatch(setPeer(response.data));
+            peerService.setCallee(response.data);
             dispatch(push("/live-call"));
         })
         .catch(error => {
@@ -36,11 +44,12 @@ export const findUserByMobileNumber = number => dispatch => {
         });
 };
 
-export const saveMobileNumber = number => dispatch => {
+export const updateUserPreferences = ({ mobileNumber, isCaller }) => dispatch => {
     dispatch(updateSubmitButton({ text: "please wait...", disabled: true }));
 
+    const sanitizedMobileNumber = sanitizeMobileNumber(mobileNumber);
     const path = `${constants.api.base}${constants.api.user.register}`;
-    const body = { mobileNumber: number };
+    const body = { mobileNumber: sanitizedMobileNumber };
     axios
         .post(path, body)
         .then(response => {
@@ -76,7 +85,7 @@ const initialInputState = {
 export default function(state = initialInputState, action) {
     switch (action.type) {
         case UPDATE_USER: {
-            return { ...action.payload };
+            return { ...state, ...action.payload };
         }
         default:
             return state;
