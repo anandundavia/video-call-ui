@@ -31,18 +31,29 @@ class LiveCall extends React.Component {
     }
 
     getVideo() {
-        return (
-            <video id="video" controls>
-                <source id="video-source" />
-                Sorry, your browser doesn't support embedded videos.
-            </video>
-        );
+        if (peerService.videoStream) {
+            return (
+                <video id="video">
+                    <source id="video-source" />
+                    Sorry, your browser doesn't support embedded videos.
+                </video>
+            );
+        }
+        console.warn("no peerService.videStream");
+        return null;
     }
 
     render() {
         return <div className={this.props.classes.main}>{this.getVideo()}</div>;
     }
-    componentDidMount() {}
+    componentDidMount() {
+        setTimeout(() => {
+            console.log("playing");
+            const video = document.getElementById("video");
+            video.srcObject = peerService.videoStream;
+            video.play();
+        }, 1000);
+    }
 }
 
 export default withStyles(styles)(LiveCall);

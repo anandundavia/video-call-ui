@@ -14,6 +14,7 @@ import InitializeCall from "./pages/InitializeCall/InitializeCall";
 import WaitForCall from "./pages/WaitForCall/WaitForCall";
 
 import { SnackbarProvider } from "notistack";
+import LiveCall from "./pages/LiveCall/LiveCall";
 
 const App = () => (
     <Provider store={store}>
@@ -26,6 +27,7 @@ const App = () => (
                         <PrivateRoute exact path="/make-call" component={MakeCall} />
                         <PrivateRoute exact path="/wait-for-call" component={WaitForCall} />
                         <PrivateRoute exact path="/initialize-call" component={InitializeCall} />
+                        <PrivateRoute exact path="/live-call" component={LiveCall} />
                         <Redirect from="**" to="/registration" />
                     </Switch>
                 </ConnectedRouter>

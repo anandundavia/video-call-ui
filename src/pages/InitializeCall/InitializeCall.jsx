@@ -70,8 +70,12 @@ class MakeCall extends React.Component {
     }
 
     render() {
-        const { classes, user, peer } = this.props;
+        const { classes, user, peer, videoCall, history } = this.props;
         const { status } = this.state;
+        if (videoCall.isStreamReceived) {
+            history.push("/live-call");
+            return null;
+        }
         return (
             <div className={classes.main}>
                 <Fade in>
@@ -172,7 +176,8 @@ class MakeCall extends React.Component {
 
 const mapStateToProps = state => ({
     user: state.user,
-    peer: state.peer
+    peer: state.peer,
+    videoCall: state.videoCall
 });
 
 const mapDispatchToProps = {};

@@ -1,6 +1,9 @@
 import Peer from "simple-peer";
 
+import { store } from "../reducers";
+
 import logger from "../utils/logger";
+import { videoCallSteamReceived } from "../reducers/videoCall/video-call.reducer";
 const log = logger(__filename);
 
 class PeerService {
@@ -19,11 +22,13 @@ class PeerService {
                 log.debug("signal from webRTC received");
                 resolve();
             });
-            this.peer.on("connect", () => {
-                console.log("connect");
+            this.peer.on("connect", foo => {
+                console.log("connect", foo);
             });
             this.peer.on("stream", videoStream => {
-                log.debug("received video steam!");
+                this.videoStream = videoStream;
+                store.dispatch(videoCallSteamReceived());
+                log.debug("received peer video steam");
             });
             this.peer.on("error", function(err) {
                 console.log("error", err);

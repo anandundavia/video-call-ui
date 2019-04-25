@@ -30,6 +30,17 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
             }
             break;
         }
+        case "/live-call": {
+            if (state.videoCall.isStreamReceived) {
+                log.debug("stream exists. allowed access to '/live-call'");
+                return <Route {...rest} component={Component} />;
+            } else {
+                log.warn(
+                    "did not find required user or user.mobileNumber and peer and peer.mobileNumber"
+                );
+            }
+            break;
+        }
         default: {
             log.debug("no rules specified. redirecting to /registration");
         }

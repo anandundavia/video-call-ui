@@ -5,12 +5,14 @@ import { createBrowserHistory } from "history";
 
 import userReducer from "./user/user.reducer";
 import peerReducer from "./peer/peer.reducer";
+import videoCallReducer from "./videoCall/video-call.reducer";
 
 export const history = createBrowserHistory();
 
 const allReducers = combineReducers({
     user: userReducer,
     peer: peerReducer,
+    videoCall: videoCallReducer,
     router: connectRouter(history)
 });
 
