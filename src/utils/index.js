@@ -1,15 +1,18 @@
 export const isResponseGood = response => 200 < response && response < 400;
 
-export const hasOnlyNumbers = (number, { allowSpaces }) => {
-    if (allowSpaces) {
-        return /[0-9+]$/.test(number);
-    }
-    return /[0-9+ ]/.test(number);
+export const isValidEmailAddress = emailAddress => {
+	const regex = /\S+@\S+/;
+	return regex.test(emailAddress);
 };
 
 export const sanitizeMobileNumber = mobileNumber => {
-    return mobileNumber
-        .trim()
-        .split(" ")
-        .join("");
+	return mobileNumber
+		.trim()
+		.split(" ")
+		.join("");
+};
+
+export const isGmailAddress = emailAddress => {
+	const regex = /\S+@gmail.com/;
+	return regex.test(emailAddress);
 };

@@ -1,22 +1,28 @@
 export default {
-    api: {
-        // base: "http://localhost:8000/api/v1",
-        base: "https://shrouded-stream-12612.herokuapp.com/api/v1",
-        user: {
-            register: "/user/register",
-            get: "/user/get"
-        }
-    },
-    socket: {
-        URL: "https://shrouded-stream-12612.herokuapp.com",
-        options: {
-            path: "/socket",
-            transports: ["polling", "websocket"]
-        },
-        events: {
-            initiatorSignal: "initiator-signal",
-            nonInitiatorSignal: "non-initiator-signal",
-            availability: "availability"
-        }
-    }
+	api: {
+		base: "http://localhost:8000/api/v1",
+		// base: "https://shrouded-stream-12612.herokuapp.com/api/v1",
+		user: {
+			register: "/user/register",
+			get: "/user/get",
+			status: "/user/status"
+		}
+	},
+	socket: {
+		URL: "http://localhost:8000",
+		// URL: "https://shrouded-stream-12612.herokuapp.com",
+		options: {
+			path: "/socket",
+			transports: ["polling", "websocket"]
+		},
+		events: {
+			/** Initial Sync */
+			SYNC_EMAIL: "SYNC_EMAIL",
+			/** Contact events for placing a connection */
+			CALLER_SEND_PROMPT: "CALLER_SEND_PROMPT",
+			CALLER_RECEIVE_PROMPT_ANSWER: "CALLER_RECEIVE_PROMPT_ANSWER",
+			CALLEE_RECEIVE_PROMPT: "CALLEE_RECEIVE_PROMPT",
+			CALLEE_SEND_PROMPT_ANSWER: "CALLEE_SEND_PROMPT_ANSWER"
+		}
+	}
 };
