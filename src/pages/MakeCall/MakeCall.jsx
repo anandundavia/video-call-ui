@@ -17,6 +17,7 @@ import Modal from "@material-ui/core/Modal";
 import { isValidEmailAddress, isGmailAddress } from "../../utils";
 import constants from "../../constants";
 import socketService from "../../services/socket.service";
+import { incomingCallAnswered } from "../../reducers/call/call.reducer";
 
 import logger from "../../utils/logger";
 const log = logger(__filename);
@@ -192,6 +193,20 @@ class MakeCall extends React.Component {
 		}
 	};
 
+	onIncomingCallAccepted = () => {
+		const { call, incomingCallAnswered } = this.props;
+		const { from } = call;
+		socketService.sendIncomingCallAnswer({ accepted: true, from });
+		incomingCallAnswered();
+	};
+
+	onIncomingCallRejected = () => {
+		const { call, incomingCallAnswered } = this.props;
+		const { from } = call;
+		socketService.sendIncomingCallAnswer({ accepted: false, from });
+		incomingCallAnswered();
+	};
+
 	getIncomingCallModal = () => {
 		const { classes, call } = this.props;
 		if (!call.incomingCall) {
@@ -222,10 +237,15 @@ class MakeCall extends React.Component {
 								variant="contained"
 								color="primary"
 								className={classes.incomingCallButtons}
+								onClick={this.onIncomingCallAccepted}
 							>
 								Accept
 							</Button>
-							<Button color="primary" className={classes.incomingCallButtons}>
+							<Button
+								color="primary"
+								onClick={this.onIncomingCallRejected}
+								className={classes.incomingCallButtons}
+							>
 								Decline
 							</Button>
 						</div>
@@ -236,7 +256,7 @@ class MakeCall extends React.Component {
 	};
 
 	render() {
-		const { classes, auth, call } = this.props;
+		const { classes, auth } = this.props;
 		const { emailAddress, submit } = this.state;
 		const { user } = auth;
 
@@ -326,7 +346,11 @@ const mapStateToProps = state => {
 	};
 };
 
+const mapDispatchToProps = () => ({
+	incomingCallAnswered
+});
+
 export default connect(
 	mapStateToProps,
-	null
+	mapDispatchToProps
 )(withStyles(styles)(MakeCall));

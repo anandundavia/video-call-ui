@@ -1,12 +1,9 @@
-import Axios from "axios";
 import io from "socket.io-client";
 
 import { store } from "../reducers";
 import { incomingCall } from "../reducers/call/call.reducer";
 
 import constants from "../constants";
-
-import peerService from "./peer.service";
 
 import logger from "../utils/logger";
 const log = logger(__filename);
@@ -22,6 +19,10 @@ class SocketService {
 			this._syncSocketWithEmail();
 		});
 		this.socket.on(events.CALLEE_RECEIVE_PROMPT, this._onCalleePromptReceived.bind(this));
+		this.socket.on(
+			events.CALLER_RECEIVE_PROMPT_ANSWER,
+			this._onCAllerPromptAnswerReceived.bind(this)
+		);
 	}
 
 	sendPrompt({ to }) {
@@ -30,6 +31,14 @@ class SocketService {
 			return log.warn(`socket is not connected. '${events.CALLER_SEND_PROMPT}' will not be sent`);
 		}
 		this.socket.emit(events.CALLER_SEND_PROMPT, { to });
+	}
+
+	sendIncomingCallAnswer({ from, accepted }) {
+		if (!this.socket.connected) {
+			// prettier-ignore
+			return log.warn(`socket is not connected. '${events.CALLEE_SEND_PROMPT_ANSWER}' will not be sent`);
+		}
+		this.socket.emit(events.CALLEE_SEND_PROMPT_ANSWER, { to: from, accepted });
 	}
 
 	_syncSocketWithEmail() {
@@ -44,34 +53,15 @@ class SocketService {
 		if (!from) {
 			return log.warn('received falsy "from" field from socket connection');
 		}
-		// dispatch some action baby!
 		store.dispatch(incomingCall({ from, displayName, photoURL }));
 	}
 
-	emitInitiatorSignal({ user, signal, peer }) {
-		log.debug(`emitting '${constants.socket.events.initiatorSignal}'`);
-		this.socket.emit(constants.socket.events.initiatorSignal, { user, signal, peer });
-	}
-
-	emitNonInitiatorSignal({ user, signal }) {
-		log.debug(`emitting '${constants.socket.events.nonInitiatorSignal}'`);
-		this.socket.emit(constants.socket.events.nonInitiatorSignal, {
-			user,
-			signal,
-			peer: this._peer
-		});
-	}
-
-	_onInitiatorSignalReceived({ user, signal, peer }) {
-		this._user = user;
-		this._peer = peer;
-		peerService.setPeerSignal(signal);
-	}
-
-	_onNonInitiatorSignalReceived({ user, signal, peer }) {
-		this._user = user;
-		this._peer = peer;
-		peerService.setPeerSignal(signal);
+	_onCAllerPromptAnswerReceived(data) {
+		const { accepted, from } = data;
+		if (accepted) {
+		} else {
+		}
+		alert(`${from} ${accepted ? "accepted" : "declined"} your call`);
 	}
 }
 export default new SocketService();

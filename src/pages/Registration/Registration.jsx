@@ -8,8 +8,6 @@ import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Fade from "@material-ui/core/Fade";
 
-import TableRow from "@material-ui/core/TableRow";
-
 import firebase from "../../config/firebase-config";
 
 import { loginSuccessful } from "../../reducers/auth/auth.reducer";
