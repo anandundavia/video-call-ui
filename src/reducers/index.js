@@ -6,12 +6,14 @@ import { firebaseReducer } from "react-redux-firebase";
 
 import callReducer from "./call/call.reducer";
 import authReducer from "./auth/auth.reducer";
+import uiReducer from "./ui/ui.reducer";
 
 export const history = createBrowserHistory();
 
 const allReducers = combineReducers({
 	call: callReducer,
 	auth: authReducer,
+	ui: uiReducer,
 	firebase: firebaseReducer,
 	router: connectRouter(history)
 });

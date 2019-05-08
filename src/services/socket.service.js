@@ -1,11 +1,12 @@
 import io from "socket.io-client";
 
 import { store } from "../reducers";
-import { incomingCall } from "../reducers/call/call.reducer";
+import { incomingCall, callAccepted, callDeclined } from "../reducers/call/call.reducer";
 
 import constants from "../constants";
 
 import logger from "../utils/logger";
+import { toggleResetCalleeForm } from "../reducers/ui/ui.reducer";
 const log = logger(__filename);
 
 const { events } = constants.socket;
@@ -43,7 +44,7 @@ class SocketService {
 
 	_syncSocketWithEmail() {
 		const { auth } = store.getState();
-		const { email, photoURL, displayName } = auth.user;
+		const { email, photoURL, displayName } = auth;
 		log.debug(`Syncing "${email}" with socket id "${this.socket.id}"`);
 		this.socket.emit(events.SYNC_EMAIL, { email, photoURL, displayName });
 	}
@@ -59,9 +60,14 @@ class SocketService {
 	_onCAllerPromptAnswerReceived(data) {
 		const { accepted, from } = data;
 		if (accepted) {
+			store.dispatch(callAccepted({ from, accepted }));
 		} else {
+			// TODO: Reset the input
+			store.dispatch(toggleResetCalleeForm(true));
+			store.dispatch(callDeclined({ from, accepted }));
 		}
-		alert(`${from} ${accepted ? "accepted" : "declined"} your call`);
+		// console.log(store.getState());
+		// alert(`${from} ${accepted ? "accepted" : "declined"} your call`);
 	}
 }
 export default new SocketService();

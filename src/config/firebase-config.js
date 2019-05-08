@@ -14,4 +14,22 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
+let hasSetPersistence = false;
+(async () => {
+	if (hasSetPersistence) {
+		return console.log("[firebase-config] persistence is already set");
+	}
+	try {
+		const st = Date.now();
+		await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+		const et = Date.now();
+		return console.log(`[firebase-config] persistence set successfully in ${et - st} ms`);
+	} catch (e) {
+		console.warn("[firebase-config] error while configuring persistence");
+		console.warn(e);
+	} finally {
+		hasSetPersistence = true;
+	}
+})();
+
 export default firebase;

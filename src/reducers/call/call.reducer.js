@@ -1,34 +1,52 @@
 export const VIDEO_STREAM_RECEIVED = "[VIDEO_CALL]STEAM_RECEIVED";
-export const CALLEE_RECEIVE_PROMPT = "[CALL]CALLEE_RECEIVE_PROMPT";
+export const SET_CALLER = "[CALL]SET_CALLER";
 export const CALLEE_ANSWERED_PROMPT = "[CALL]CALLEE_ANSWERED_PROMPT";
+export const SET_CALLEE = "[CALL]SET_CALLEE";
+export const UNSET_CALLEE = "[CALL]UNSET_CALLEE";
 
-export const incomingCall = payload => ({ type: CALLEE_RECEIVE_PROMPT, payload });
-
+export const incomingCall = payload => ({ type: SET_CALLER, payload });
 export const incomingCallAnswered = () => ({ type: CALLEE_ANSWERED_PROMPT });
+
+export const callAccepted = payload => ({ type: SET_CALLEE, payload });
+export const callDeclined = payload => ({ type: UNSET_CALLEE, payload });
 
 const initialState = {
 	incomingCall: null,
-	from: null,
-	displayName: null,
-	photoURL: null
+	caller: {},
+	callee: {}
 };
 
 export default function(state = initialState, action) {
 	switch (action.type) {
-		case CALLEE_RECEIVE_PROMPT: {
+		case SET_CALLER: {
 			return {
 				...state,
 				incomingCall: true,
-				...action.payload
+				caller: {
+					...action.payload
+				}
 			};
 		}
 		case CALLEE_ANSWERED_PROMPT: {
 			return {
 				...state,
-				incomingCall: false,
-				from: null,
-				displayName: null,
-				photoURL: null
+				incomingCall: false
+			};
+		}
+		case SET_CALLEE: {
+			return {
+				...state,
+				callee: {
+					...action.payload
+				}
+			};
+		}
+		case UNSET_CALLEE: {
+			return {
+				...state,
+				callee: {
+					...action.payload
+				}
 			};
 		}
 		default: {

@@ -12,7 +12,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
 		case "/wait-for-call":
 		case "/make-call": {
 			if (firebase.auth().currentUser) {
-				log.debug("User exists. allowed access to '/initiate-call'");
+				log.debug(`User exists. allowed access to '${rest.path}'`);
 				return <Route {...rest} component={Component} />;
 			} else {
 				log.warn("Did not find user in firebase.auth().currentUser");

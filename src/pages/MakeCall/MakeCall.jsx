@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import { withSnackbar } from "notistack";
 import Axios from "axios";
 
 import withStyles from "@material-ui/core/styles/withStyles";
@@ -17,7 +18,9 @@ import Modal from "@material-ui/core/Modal";
 import { isValidEmailAddress, isGmailAddress } from "../../utils";
 import constants from "../../constants";
 import socketService from "../../services/socket.service";
+
 import { incomingCallAnswered } from "../../reducers/call/call.reducer";
+import { toggleResetCalleeForm } from "../../reducers/ui/ui.reducer";
 
 import logger from "../../utils/logger";
 const log = logger(__filename);
@@ -117,8 +120,8 @@ class MakeCall extends React.Component {
 		message = error ? "Only gmail addresses are supported" : null;
 
 		const { auth } = this.props;
-		const { user } = auth;
-		if (value === user.email) {
+
+		if (value === auth.email) {
 			error = true;
 			message = "Can not be the same email as yours";
 		}
@@ -193,18 +196,19 @@ class MakeCall extends React.Component {
 		}
 	};
 
-	onIncomingCallAccepted = () => {
+	onIncomingCallHandled = accepted => {
 		const { call, incomingCallAnswered } = this.props;
-		const { from } = call;
-		socketService.sendIncomingCallAnswer({ accepted: true, from });
+		const { caller } = call;
+		socketService.sendIncomingCallAnswer({ accepted, from: caller.from });
 		incomingCallAnswered();
 	};
 
+	onIncomingCallAccepted = () => {
+		this.onIncomingCallHandled(true);
+	};
+
 	onIncomingCallRejected = () => {
-		const { call, incomingCallAnswered } = this.props;
-		const { from } = call;
-		socketService.sendIncomingCallAnswer({ accepted: false, from });
-		incomingCallAnswered();
+		this.onIncomingCallHandled(false);
 	};
 
 	getIncomingCallModal = () => {
@@ -212,6 +216,7 @@ class MakeCall extends React.Component {
 		if (!call.incomingCall) {
 			return null;
 		}
+		const { caller } = call;
 		const style = {
 			top: "50%",
 			left: "50%",
@@ -225,12 +230,12 @@ class MakeCall extends React.Component {
 					</Typography>
 					<div className={classes.modalBody}>
 						<Avatar
-							alt={call.displayName}
-							src={call.photoURL}
+							alt={caller.displayName}
+							src={caller.photoURL}
 							className={classes.avatar}
 						/>
-						<Typography variant="subtitle1" id="simple-modal-description">
-							{call.displayName} is calling you...
+						<Typography variant="subtitle1">
+							{caller.displayName} is calling you...
 						</Typography>
 						<div className={classes.incomingCallButtonsContainer}>
 							<Button
@@ -255,32 +260,39 @@ class MakeCall extends React.Component {
 		);
 	};
 
+	componentDidUpdate() {
+		const { ui, history, toggleResetCalleeForm, enqueueSnackbar } = this.props;
+		if (ui.resetCalleeForm) {
+			enqueueSnackbar(`You call was declined`);
+			history.replace("/registration");
+			toggleResetCalleeForm(false);
+		}
+	}
+
 	render() {
 		const { classes, auth } = this.props;
 		const { emailAddress, submit } = this.state;
-		const { user } = auth;
-
 		return (
 			<div className={classes.main}>
 				{this.getIncomingCallModal()}
 				<Fade in>
 					<Paper className={classes.paper}>
 						<Avatar
-							alt={auth.user.displayName}
-							src={auth.user.photoURL}
+							alt={auth.displayName}
+							src={auth.photoURL}
 							className={classes.avatar}
 						/>
 						<Typography component="h1" variant="h5">
-							Hello, {auth.user.displayName}!
+							Hello, {auth.displayName}!
 						</Typography>
-						<Typography variant="caption">ID: {user.uid}</Typography>
-						<Typography variant="caption">EMAIL: {user.email}</Typography>
+						<Typography variant="caption">ID: {auth.uid}</Typography>
+						<Typography variant="caption">EMAIL: {auth.email}</Typography>
 					</Paper>
 				</Fade>
 				<Fade in>
 					<Paper className={classes.paper}>
 						<Typography component="h1" variant="h5">
-							Whom Do You Want To Call?
+							Whom do you want to call?
 						</Typography>
 						<form className={classes.form}>
 							<FormControl margin="normal" required fullWidth>
@@ -325,7 +337,7 @@ class MakeCall extends React.Component {
 	async componentDidMount() {
 		socketService.init();
 		const { auth } = this.props;
-		const { email } = auth.user;
+		const { email } = auth;
 		const status = constants.status.LOGGED_IN;
 		const URL = `${constants.api.base}${constants.api.user.status}`;
 		try {
@@ -342,15 +354,17 @@ const mapStateToProps = state => {
 	return {
 		user: state.user,
 		auth: state.auth,
-		call: state.call
+		call: state.call,
+		ui: state.ui
 	};
 };
 
-const mapDispatchToProps = () => ({
-	incomingCallAnswered
-});
+const mapDispatchToProps = {
+	incomingCallAnswered,
+	toggleResetCalleeForm
+};
 
 export default connect(
 	mapStateToProps,
 	mapDispatchToProps
-)(withStyles(styles)(MakeCall));
+)(withSnackbar(withStyles(styles)(MakeCall)));

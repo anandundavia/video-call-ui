@@ -7,6 +7,7 @@ import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Fade from "@material-ui/core/Fade";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 import firebase from "../../config/firebase-config";
 
@@ -51,7 +52,8 @@ class Registration extends React.Component {
 			loginButton: {
 				disabled: false,
 				text: "Login with Google"
-			}
+			},
+			loading: true
 		};
 	}
 
@@ -67,7 +69,7 @@ class Registration extends React.Component {
 			const result = await firebase.auth().signInWithPopup(provider);
 			this.updateLoginButton({ disabled: false, text: "Login with Google" });
 			log.debug("Login with Google successful");
-			this.props.loginSuccessful(result);
+			this.props.loginSuccessful(result.user);
 			this.props.history.push("/make-call");
 		} catch (error) {
 			this.updateLoginButton({ disabled: false, text: "Login with Google" });
@@ -84,32 +86,53 @@ class Registration extends React.Component {
 		}
 	};
 
+	renderProgress() {
+		const { loading } = this.state;
+		if (loading) {
+			return <CircularProgress />;
+		}
+	}
+
+	renderLoginForm() {
+		const { classes } = this.props;
+		const { loginButton, loading } = this.state;
+		if (loading) {
+			return;
+		}
+		return (
+			<React.Fragment>
+				<Typography component="h1" variant="h5">
+					Identify Yourself
+				</Typography>
+				<Button
+					fullWidth
+					variant="outlined"
+					color="primary"
+					className={classes.submit}
+					disabled={loginButton.disabled}
+					onClick={this.initiateLoginWithGoogle}
+				>
+					<img
+						className={classes.googleLogo}
+						width="20px"
+						alt='Google "G" Logo'
+						src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png"
+					/>
+					{loginButton.text}
+				</Button>
+			</React.Fragment>
+		);
+	}
+
 	render() {
 		const { classes } = this.props;
-		const { loginButton } = this.state;
+
 		return (
 			<div className={classes.main}>
 				<Fade in>
 					<Paper className={classes.paper}>
-						<Typography component="h1" variant="h5">
-							Identify Yourself
-						</Typography>
-						<Button
-							fullWidth
-							variant="outlined"
-							color="primary"
-							className={classes.submit}
-							disabled={loginButton.disabled}
-							onClick={this.initiateLoginWithGoogle}
-						>
-							<img
-								className={classes.googleLogo}
-								width="20px"
-								alt='Google "G" Logo'
-								src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png"
-							/>
-							{loginButton.text}
-						</Button>
+						{this.renderProgress()}
+						{this.renderLoginForm()}
 					</Paper>
 				</Fade>
 			</div>
@@ -117,10 +140,14 @@ class Registration extends React.Component {
 	}
 
 	componentDidMount() {
-		if (firebase.auth().currentUser) {
-			log.debug("User is already logged in. redirecting...");
-			this.props.history.push("/make-call");
-		}
+		firebase.auth().onAuthStateChanged(user => {
+			if (user) {
+				this.props.loginSuccessful(user);
+				this.props.history.push("/make-call");
+			} else {
+				this.setState({ loading: false });
+			}
+		});
 	}
 }
 
