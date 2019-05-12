@@ -4,6 +4,8 @@ import { connect } from "react-redux";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
+import CallEnd from "@material-ui/icons/CallEnd";
+import IconButton from "@material-ui/core/IconButton";
 
 const styles = theme => ({
 	main: {
@@ -27,6 +29,11 @@ const styles = theme => ({
 		display: "flex",
 		flexDirection: "column",
 		alignItems: "center"
+	},
+	actions: {
+		marginTop: theme.spacing.unit * 2,
+		display: "flex",
+		justifyContent: "center"
 	}
 });
 
@@ -49,6 +56,11 @@ class OngoingCall extends React.Component {
 						<p>Your browser does not support H.264/MP4.</p>
 					</video>
 				</Paper>
+				<div className={classes.actions}>
+					<IconButton>
+						<CallEnd />
+					</IconButton>
+				</div>
 			</div>
 		);
 	}
