@@ -22,7 +22,7 @@ class SocketService {
 		this.socket.on(events.CALLEE_RECEIVE_PROMPT, this._onCalleePromptReceived.bind(this));
 		this.socket.on(
 			events.CALLER_RECEIVE_PROMPT_ANSWER,
-			this._onCAllerPromptAnswerReceived.bind(this)
+			this._onCallerPromptAnswerReceived.bind(this)
 		);
 	}
 
@@ -57,17 +57,16 @@ class SocketService {
 		store.dispatch(incomingCall({ from, displayName, photoURL }));
 	}
 
-	_onCAllerPromptAnswerReceived(data) {
+	_onCallerPromptAnswerReceived(data) {
 		const { accepted, from } = data;
 		if (accepted) {
 			store.dispatch(callAccepted({ from, accepted }));
+			// store.
 		} else {
 			// TODO: Reset the input
 			store.dispatch(toggleResetCalleeForm(true));
 			store.dispatch(callDeclined({ from, accepted }));
 		}
-		// console.log(store.getState());
-		// alert(`${from} ${accepted ? "accepted" : "declined"} your call`);
 	}
 }
 export default new SocketService();

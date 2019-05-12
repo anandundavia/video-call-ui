@@ -14,6 +14,7 @@ import Typography from "@material-ui/core/Typography";
 import Fade from "@material-ui/core/Fade";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Modal from "@material-ui/core/Modal";
+import LinearProgress from "@material-ui/core/LinearProgress";
 
 import { isValidEmailAddress, isGmailAddress } from "../../utils";
 import constants from "../../constants";
@@ -82,6 +83,10 @@ const styles = theme => ({
 	incomingCallButtons: {
 		marginLeft: theme.spacing.unit,
 		marginRight: theme.spacing.unit
+	},
+	modalProgress: {
+		marginTop: theme.spacing.unit * 3,
+		textAlign: "center"
 	}
 });
 
@@ -91,13 +96,18 @@ class MakeCall extends React.Component {
 		this.state = {
 			emailAddress: {
 				disabled: false,
-				value: "",
+				value: "moodpotprojectapp@gmail.com",
 				error: null,
 				message: null
 			},
 			submit: {
 				disabled: true,
 				text: "fill the email address"
+			},
+			timer: {
+				timeout: 30000, // 30 seconds to milliseconds
+				remaining: 100,
+				started: false
 			}
 		};
 	}
@@ -137,7 +147,7 @@ class MakeCall extends React.Component {
 		const submitButtonError = error;
 		const submit = {
 			disabled: submitButtonError,
-			text: submitButtonError ? "fill in mobile number" : "call"
+			text: submitButtonError ? "fill in email address" : "call"
 		};
 
 		this.updateSubmitButton(submit);
@@ -201,6 +211,14 @@ class MakeCall extends React.Component {
 		const { caller } = call;
 		socketService.sendIncomingCallAnswer({ accepted, from: caller.from });
 		incomingCallAnswered();
+		log.debug(`resetting the timer`);
+		this.setState({
+			timer: {
+				timeout: 30000,
+				remaining: 100,
+				started: false
+			}
+		});
 	};
 
 	onIncomingCallAccepted = () => {
@@ -211,11 +229,39 @@ class MakeCall extends React.Component {
 		this.onIncomingCallHandled(false);
 	};
 
+	_startModalTimer = () => {
+		const { timer } = this.state;
+		if (timer.started) {
+			return;
+		}
+		const tick = timer.timeout / 100;
+		log.debug(`starting the modal timer`);
+		const interval = setInterval(() => {
+			if (this.state.timer.remaining <= 0) {
+				log.debug(`stopping the modal timer`);
+				clearInterval(interval);
+				this.onIncomingCallRejected();
+			} else {
+				this.setState(state => ({
+					timer: { timeout: 30000, started: true, remaining: state.timer.remaining - 1 }
+				}));
+			}
+		}, tick);
+	};
+
+	__getRemainingTimeInSeconds = () => {
+		const { timer } = this.state;
+		const remaining = (timer.timeout * timer.remaining) / (1000 * 100);
+		return remaining.toFixed(0);
+	};
+
 	getIncomingCallModal = () => {
 		const { classes, call } = this.props;
 		if (!call.incomingCall) {
 			return null;
 		}
+		this._startModalTimer();
+		const { timer } = this.state;
 		const { caller } = call;
 		const style = {
 			top: "50%",
@@ -255,17 +301,28 @@ class MakeCall extends React.Component {
 							</Button>
 						</div>
 					</div>
+					<div className={classes.modalProgress}>
+						<Typography variant="caption">
+							Auto decline in {this.__getRemainingTimeInSeconds()}s...
+						</Typography>
+						<LinearProgress variant="buffer" value={0} valueBuffer={timer.remaining} />
+					</div>
 				</div>
 			</Modal>
 		);
 	};
 
 	componentDidUpdate() {
-		const { ui, history, toggleResetCalleeForm, enqueueSnackbar } = this.props;
+		const { ui, history, toggleResetCalleeForm, enqueueSnackbar, call } = this.props;
 		if (ui.resetCalleeForm) {
 			enqueueSnackbar(`You call was declined`);
 			history.replace("/registration");
 			toggleResetCalleeForm(false);
+		}
+		const { callee } = call;
+		const { from, accepted } = callee;
+		if (from && accepted) {
+			history.replace("/ongoing-call");
 		}
 	}
 
@@ -336,17 +393,6 @@ class MakeCall extends React.Component {
 
 	async componentDidMount() {
 		socketService.init();
-		const { auth } = this.props;
-		const { email } = auth;
-		const status = constants.status.LOGGED_IN;
-		const URL = `${constants.api.base}${constants.api.user.status}`;
-		try {
-			log.debug(`Updating status to "${status}" for email "${email}"`);
-			await Axios.patch(URL, { email, status });
-		} catch (error) {
-			log.error(`Failed to update status for email "${email}"`);
-			log.error(error);
-		}
 	}
 }
 

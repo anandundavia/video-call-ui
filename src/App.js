@@ -12,6 +12,7 @@ import MakeCall from "./pages/MakeCall/MakeCall";
 import PrivateRoute from "./components/PrivateRoute";
 
 import { SnackbarProvider } from "notistack";
+import OngoingCall from "./pages/OngoingCall/OngoingCall";
 
 const App = () => (
 	<Provider store={store}>
@@ -22,6 +23,7 @@ const App = () => (
 					<Switch>
 						<Route exact path="/registration" component={Registration} />
 						<PrivateRoute exact path="/make-call" component={MakeCall} />
+						<PrivateRoute exact path="/ongoing-call" component={OngoingCall} />
 						<Redirect from="**" to="/registration" />
 					</Switch>
 				</ConnectedRouter>

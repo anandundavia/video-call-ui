@@ -1,7 +1,7 @@
 export default {
 	api: {
-		base: "http://localhost:8000/api/v1",
-		// base: "https://shrouded-stream-12612.herokuapp.com/api/v1",
+		// base: "http://localhost:8000/api/v1",
+		base: "https://video-call-api.herokuapp.com/api/v1",
 		user: {
 			register: "/user/register",
 			get: "/user/get",
@@ -9,11 +9,11 @@ export default {
 		}
 	},
 	socket: {
-		URL: "http://localhost:8000",
-		// URL: "https://shrouded-stream-12612.herokuapp.com",
+		// URL: "http://localhost:8000",
+		URL: "https://video-call-api.herokuapp.com",
 		options: {
 			path: "/socket",
-			transports: ["polling", "websocket"]
+			transports: ["websocket", "polling"]
 		},
 		events: {
 			/** Initial Sync */
