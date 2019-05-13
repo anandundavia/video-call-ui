@@ -96,7 +96,7 @@ class MakeCall extends React.Component {
 		this.state = {
 			emailAddress: {
 				disabled: false,
-				value: "moodpotprojectapp@gmail.com",
+				value: "",
 				error: null,
 				message: null
 			},
@@ -207,7 +207,7 @@ class MakeCall extends React.Component {
 	};
 
 	onIncomingCallHandled = accepted => {
-		const { call, incomingCallAnswered } = this.props;
+		const { call, incomingCallAnswered, history } = this.props;
 		const { caller } = call;
 		socketService.sendIncomingCallAnswer({ accepted, from: caller.from });
 		incomingCallAnswered();
@@ -219,6 +219,7 @@ class MakeCall extends React.Component {
 				started: false
 			}
 		});
+		history.replace("/ongoing-call");
 	};
 
 	onIncomingCallAccepted = () => {

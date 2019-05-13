@@ -9,6 +9,9 @@ import IconButton from "@material-ui/core/IconButton";
 
 import peerService from "../../services/peer.service";
 
+import logger from "../../utils/logger";
+const log = logger(__filename);
+
 const styles = theme => ({
 	main: {
 		height: "100vh",
@@ -48,7 +51,7 @@ class OngoingCall extends React.Component {
 					On going call with {callee.from}
 				</Typography>
 				<Paper className={classes.videoPaper}>
-					<video width="100%" autoPlay>
+					<video width="100%" autoPlay ref={x => (this.videoElement = x)}>
 						<source
 							src="https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4"
 							type="video/mp4"
@@ -66,6 +69,17 @@ class OngoingCall extends React.Component {
 	}
 	componentDidMount() {
 		peerService.init();
+		peerService.subscribe(peerService.events.STREAM_RECEIVED, stream => {
+			try {
+				const srcObject = stream;
+				this.videoElement.srcObject = srcObject;
+			} catch (error) {
+				log.warn(`Using old URL.createObjectURL method`);
+				log.warn(error);
+				const src = window.URL.createObjectURL(stream);
+				this.videoElement.src = src;
+			}
+		});
 	}
 }
 

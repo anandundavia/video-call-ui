@@ -23,8 +23,10 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
 		case "/ongoing-call": {
 			if (firebase.auth().currentUser) {
 				const state = store.getState();
-				const { callee } = state.call;
+				const { callee, caller } = state.call;
 				if (callee && Object.keys(callee) !== 0 && callee.accepted) {
+					return <Route {...rest} component={Component} />;
+				} else if (caller && Object.keys(caller) !== 0) {
 					return <Route {...rest} component={Component} />;
 				} else {
 					log.warn("state.call.callee either empty or falsy");
