@@ -7,6 +7,8 @@ import Typography from "@material-ui/core/Typography";
 import CallEnd from "@material-ui/icons/CallEnd";
 import IconButton from "@material-ui/core/IconButton";
 
+import peerService from "../../services/peer.service";
+
 const styles = theme => ({
 	main: {
 		height: "100vh",
@@ -15,7 +17,6 @@ const styles = theme => ({
 		marginLeft: theme.spacing.unit * 3,
 		marginRight: theme.spacing.unit * 3,
 		[theme.breakpoints.up(400 + theme.spacing.unit * 3 * 2)]: {
-			// width: 400,
 			marginLeft: "auto",
 			marginRight: "auto"
 		}
@@ -39,7 +40,6 @@ const styles = theme => ({
 
 class OngoingCall extends React.Component {
 	render() {
-		// sizing.
 		const { classes, call } = this.props;
 		const { callee } = call;
 		return (
@@ -63,6 +63,9 @@ class OngoingCall extends React.Component {
 				</div>
 			</div>
 		);
+	}
+	componentDidMount() {
+		peerService.init();
 	}
 }
 

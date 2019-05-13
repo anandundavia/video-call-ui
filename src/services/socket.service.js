@@ -5,15 +5,20 @@ import { incomingCall, callAccepted, callDeclined } from "../reducers/call/call.
 
 import constants from "../constants";
 
-import logger from "../utils/logger";
 import { toggleResetCalleeForm } from "../reducers/ui/ui.reducer";
+
+import toArray from "../utils/to-array";
+import logger from "../utils/logger";
 const log = logger(__filename);
 
 const { events } = constants.socket;
 
+const eventsArray = toArray(events);
+
 class SocketService {
 	init() {
 		log.debug(`connecting socket server on "${constants.socket.URL}"`);
+		this.events = events;
 		this.socket = io.connect(constants.socket.URL, constants.socket.options);
 		this.socket.on("connect", () => {
 			log.info(`successfully opened a socket connection`);
@@ -24,6 +29,8 @@ class SocketService {
 			events.CALLER_RECEIVE_PROMPT_ANSWER,
 			this._onCallerPromptAnswerReceived.bind(this)
 		);
+		this.socket.on(events.RECEIVE_PEER_SIGNAL, this._onPeerSignalReceived.bind(this));
+		this._subscriptions = [];
 	}
 
 	sendPrompt({ to }) {
@@ -61,12 +68,31 @@ class SocketService {
 		const { accepted, from } = data;
 		if (accepted) {
 			store.dispatch(callAccepted({ from, accepted }));
-			// store.
 		} else {
-			// TODO: Reset the input
 			store.dispatch(toggleResetCalleeForm(true));
 			store.dispatch(callDeclined({ from, accepted }));
 		}
+	}
+
+	subscribe(event, callback) {
+		if (!eventsArray.includes(event)) {
+			throw new Error(`${event} must be one of ${eventsArray.join(",")}`);
+		}
+		this._subscriptions.push({ event, callback });
+	}
+
+	/** We would always receive the initiator signal */
+	_onPeerSignalReceived(data) {
+		const subscription = this._subscriptions.find(
+			aSubscription => aSubscription.event === events.RECEIVE_PEER_SIGNAL
+		);
+		subscription.forEach(aSubscription => {
+			try {
+				aSubscription(data);
+			} catch (e) {
+				log.error(e);
+			}
+		});
 	}
 }
 export default new SocketService();
