@@ -14,7 +14,7 @@ import firebase from "../../config/firebase-config";
 import { loginSuccessful } from "../../reducers/auth/auth.reducer";
 
 import logger from "../../utils/logger";
-const log = logger(__filename);
+const log = logger("registration");
 
 const styles = theme => ({
 	main: {

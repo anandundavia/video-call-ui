@@ -24,7 +24,7 @@ import { incomingCallAnswered } from "../../reducers/call/call.reducer";
 import { toggleResetCalleeForm } from "../../reducers/ui/ui.reducer";
 
 import logger from "../../utils/logger";
-const log = logger(__filename);
+const log = logger("make-call");
 
 const styles = theme => ({
 	main: {

@@ -9,7 +9,7 @@ import { toggleResetCalleeForm } from "../reducers/ui/ui.reducer";
 
 import toArray from "../utils/to-array";
 import logger from "../utils/logger";
-const log = logger(__filename);
+const log = logger("socket-service");
 
 class SocketService {
 	constructor() {

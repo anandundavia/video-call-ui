@@ -7,7 +7,7 @@ import streamService from "./stream.service";
 
 import toArray from "../utils/to-array";
 import logger from "../utils/logger";
-const log = logger(__filename);
+const log = logger("peer-service");
 
 class PeerService {
 	constructor() {

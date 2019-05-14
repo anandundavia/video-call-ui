@@ -5,7 +5,7 @@ import { store } from "../reducers";
 import firebase from "../config/firebase-config";
 
 import logger from "../utils/logger";
-const log = logger(__filename);
+const log = logger("private-route");
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
 	log.debug(`Incoming route: ${rest.path}`);

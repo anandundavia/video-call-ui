@@ -10,7 +10,7 @@ import IconButton from "@material-ui/core/IconButton";
 import peerService from "../../services/peer.service";
 
 import logger from "../../utils/logger";
-const log = logger(__filename);
+const log = logger("ongoing-call");
 
 const styles = theme => ({
 	main: {
@@ -42,6 +42,10 @@ const styles = theme => ({
 });
 
 class OngoingCall extends React.Component {
+	endCall = () => {
+		window.location.href = "/";
+	};
+
 	render() {
 		const { classes, call } = this.props;
 		const { callee } = call;
@@ -60,7 +64,7 @@ class OngoingCall extends React.Component {
 					</video>
 				</Paper>
 				<div className={classes.actions}>
-					<IconButton>
+					<IconButton onClick={this.endCall}>
 						<CallEnd />
 					</IconButton>
 				</div>
