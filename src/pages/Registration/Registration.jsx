@@ -18,7 +18,6 @@ const log = logger("registration");
 
 const styles = theme => ({
 	main: {
-		height: "100vh",
 		width: "auto",
 		display: "block", // Fix IE 11 issue.
 		marginLeft: theme.spacing.unit * 3,

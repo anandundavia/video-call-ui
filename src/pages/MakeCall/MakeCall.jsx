@@ -28,7 +28,6 @@ const log = logger("make-call");
 
 const styles = theme => ({
 	main: {
-		height: "100vh",
 		width: "auto",
 		display: "block", // Fix IE 11 issue.
 		marginLeft: theme.spacing.unit * 3,
@@ -113,11 +112,11 @@ class MakeCall extends React.Component {
 	}
 
 	updateEmailAddress = props => {
-		this.setState({ emailAddress: { ...props } });
+		this.setState({ emailAddress: { ...this.state.emailAddress, ...props } });
 	};
 
 	updateSubmitButton = props => {
-		this.setState({ submit: { ...props } });
+		this.setState({ submit: { ...this.state.submit, ...props } });
 	};
 
 	onEmailAddressChanged = e => {
@@ -219,7 +218,12 @@ class MakeCall extends React.Component {
 				started: false
 			}
 		});
-		history.replace("/ongoing-call");
+		if (accepted) {
+			history.replace("/ongoing-call");
+		} else {
+			const { enqueueSnackbar } = this.props;
+			enqueueSnackbar(`Call from ${caller.displayName} was declined`);
+		}
 	};
 
 	onIncomingCallAccepted = () => {
@@ -361,7 +365,6 @@ class MakeCall extends React.Component {
 									placeholder="someone@gmail.com"
 									autoFocus
 									required
-									disabled={emailAddress.disabled}
 									value={emailAddress.value}
 									error={emailAddress.error}
 									onChange={this.onEmailAddressChanged}

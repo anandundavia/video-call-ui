@@ -5,6 +5,8 @@ import { store } from "../reducers";
 import socketService from "./socket.service";
 import streamService from "./stream.service";
 
+import { toggleLoadingBar } from "../reducers/ui/ui.reducer";
+
 import toArray from "../utils/to-array";
 import logger from "../utils/logger";
 const log = logger("peer-service");
@@ -19,6 +21,7 @@ class PeerService {
 	}
 
 	async init() {
+		store.dispatch(toggleLoadingBar(true));
 		this._initializeNonInitiatorPeer();
 		await this._initializeInitiatorPeer();
 	}
@@ -34,7 +37,7 @@ class PeerService {
 				socketService.events.RECEIVE_NON_INITIATOR_PEER_SIGNAL,
 				data => {
 					const { from, signal } = data;
-					log.debug(`[OTHER] Initiator signal received from "${from}"`);
+					log.debug(`[OTHER] Signal reply received from non initiator peer"${from}"`);
 					this.initiatorPeer.signal(signal);
 					log.info("Peer successfully connected");
 				}
@@ -50,7 +53,7 @@ class PeerService {
 		log.debug(`Subscribing to "${socketService.events.RECEIVE_INITIATOR_PEER_SIGNAL}"`);
 		socketService.subscribe(socketService.events.RECEIVE_INITIATOR_PEER_SIGNAL, data => {
 			const { from, signal } = data;
-			log.debug(`[OTHER] Initiator signal received from "${from}"`);
+			log.debug(`[OTHER] Signal received from initiator peer "${from}"`);
 			this.nonInitiatorPeer = new Peer({ trickle: false });
 			this.nonInitiatorPeer.on("signal", this._onNonInitiatorPeerSignalReceived.bind(this));
 			this.nonInitiatorPeer.signal(signal);
@@ -87,6 +90,7 @@ class PeerService {
 	}
 
 	_onStreamReceived(stream) {
+		store.dispatch(toggleLoadingBar(false));
 		this.__flushToSubscribers(this.events.STREAM_RECEIVED, stream);
 	}
 

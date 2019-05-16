@@ -87,9 +87,9 @@ class SocketService {
 	}
 
 	_onCallerPromptAnswerReceived(data) {
-		const { accepted, from } = data;
+		const { accepted, from, displayName, photoURL } = data;
 		if (accepted) {
-			store.dispatch(callAccepted({ from, accepted }));
+			store.dispatch(callAccepted({ from, accepted, displayName, photoURL }));
 		} else {
 			store.dispatch(toggleResetCalleeForm(true));
 			store.dispatch(callDeclined({ from, accepted }));

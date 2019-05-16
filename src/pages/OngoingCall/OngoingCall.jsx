@@ -6,6 +6,7 @@ import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import CallEnd from "@material-ui/icons/CallEnd";
 import IconButton from "@material-ui/core/IconButton";
+import LinearProgress from "@material-ui/core/LinearProgress";
 
 import peerService from "../../services/peer.service";
 
@@ -14,7 +15,6 @@ const log = logger("ongoing-call");
 
 const styles = theme => ({
 	main: {
-		height: "100vh",
 		width: "70vw",
 		display: "block", // Fix IE 11 issue.
 		marginLeft: theme.spacing.unit * 3,
@@ -38,6 +38,14 @@ const styles = theme => ({
 		marginTop: theme.spacing.unit * 2,
 		display: "flex",
 		justifyContent: "center"
+	},
+	loadingPaper: {
+		marginTop: theme.spacing.unit * 2,
+		display: "flex",
+		flexDirection: "column"
+	},
+	loading: {
+		margin: theme.spacing.unit * 4
 	}
 });
 
@@ -47,21 +55,27 @@ class OngoingCall extends React.Component {
 	};
 
 	render() {
-		const { classes, call } = this.props;
-		const { callee } = call;
+		const { classes, call, ui } = this.props;
+		const { callee, caller } = call;
+		if (ui.showLoadingBar) {
+			return (
+				<div className={classes.main}>
+					<Typography className={classes.title} variant="subtitle1">
+						Please wait, you are being connected...
+					</Typography>
+					<Paper className={classes.loadingPaper}>
+						<LinearProgress className={classes.loading} />
+					</Paper>
+				</div>
+			);
+		}
 		return (
 			<div className={classes.main}>
 				<Typography className={classes.title} variant="subtitle1">
-					On going call with {callee.from}
+					On going call with {callee.displayName || caller.displayName}
 				</Typography>
 				<Paper className={classes.videoPaper}>
-					<video width="100%" autoPlay ref={x => (this.videoElement = x)}>
-						<source
-							src="https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4"
-							type="video/mp4"
-						/>
-						<p>Your browser does not support H.264/MP4.</p>
-					</video>
+					<video width="100%" autoPlay ref={x => (this.videoElement = x)} />
 				</Paper>
 				<div className={classes.actions}>
 					<IconButton onClick={this.endCall}>
@@ -72,22 +86,26 @@ class OngoingCall extends React.Component {
 		);
 	}
 	componentDidMount() {
-		peerService.init();
 		peerService.subscribe(peerService.events.STREAM_RECEIVED, stream => {
-			try {
-				const srcObject = stream;
-				this.videoElement.srcObject = srcObject;
-			} catch (error) {
-				log.warn(`Using old URL.createObjectURL method`);
-				log.warn(error);
-				const src = window.URL.createObjectURL(stream);
-				this.videoElement.src = src;
-			}
+			this._attachStreamToElement(stream, this.videoElement);
 		});
+		peerService.init();
+	}
+
+	_attachStreamToElement(stream, el) {
+		try {
+			const srcObject = stream;
+			el.srcObject = srcObject;
+		} catch (error) {
+			log.warn(`Using old URL.createObjectURL method`);
+			log.warn(error);
+			const src = window.URL.createObjectURL(stream);
+			el.selfVideoElement.src = src;
+		}
 	}
 }
 
-const mapStateToProps = state => ({ call: state.call });
+const mapStateToProps = state => ({ call: state.call, ui: state.ui });
 const mapDispatchToProps = {};
 
 export default connect(
