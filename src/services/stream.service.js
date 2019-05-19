@@ -1,7 +1,7 @@
 class StreamService {
-    requestStream() {
-        return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    }
+	requestStream({ video, audio } = { video: true, audio: true }) {
+		return navigator.mediaDevices.getUserMedia({ video, audio });
+	}
 }
 
 export default new StreamService();

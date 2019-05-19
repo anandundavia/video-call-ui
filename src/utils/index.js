@@ -16,3 +16,17 @@ export const isGmailAddress = emailAddress => {
 	const regex = /\S+@gmail.com/;
 	return regex.test(emailAddress);
 };
+
+export const getLargerDimension = () => {
+	return {
+		size: window.innerHeight > window.innerWidth ? window.innerHeight : window.innerWidth,
+		name: window.innerHeight > window.innerWidth ? "height" : "width"
+	};
+};
+
+export const getSmallerDimension = () => {
+	return {
+		size: window.innerHeight > window.innerWidth ? window.innerHeight : window.innerWidth,
+		name: window.innerHeight > window.innerWidth ? "height" : "width"
+	};
+};
